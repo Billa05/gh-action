@@ -1,20 +1,19 @@
-name: Deploy Docusaurus to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
-
-permissions:
-  contents: write
+    branches:
+      - main
 
 jobs:
-  deploy:
+  build:
+    name: Build Docusaurus
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          persist-credentials: false
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -25,16 +24,44 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Build site
+      - name: Build website
         run: yarn build
+
+      - name: Upload Build Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+
+    # Grant GITHUB_TOKEN the permissions required to deploy
+    permissions:
+      contents: write  # Needed for pushing to gh-pages
+      pages: write  # For GitHub Pages deployment
+      id-token: write  # For authentication
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4  # This was missing in your deploy job
 
       - name: Configure Git user
         run: |
           git config --global user.email "workinguse5@gmail.com"
           git config --global user.name "billa05"
 
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: github-pages
+          path: build
+
       - name: Deploy to GitHub Pages
-        run: yarn deploy
-        env:
-          GIT_USER: ${{ secrets.GITHUB_TOKEN }}
-          USE_SSH: false
+        id: deployment
+        uses: actions/deploy-pages@v4
