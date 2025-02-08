@@ -10,7 +10,7 @@ import {themes as prismThemes} from 'prism-react-renderer';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'CyberTeam',
+  title: 'CyberTeam test deployment',
   tagline: 'We Start, When The World Halts!',
   favicon: 'img/favicon.ico',
 
